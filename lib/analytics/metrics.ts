@@ -217,7 +217,7 @@ export class AnalyticsService {
       if (!productSales.has(productId)) {
         productSales.set(productId, {
           id: productId,
-          name: order.product?.name || 'Unknown Product',
+          name: (order.product as any)?.name || 'Unknown Product',
           sales: 0,
           revenue: 0
         })
@@ -260,8 +260,8 @@ export class AnalyticsService {
       if (!uniqueCustomers.has(buyerId)) {
         uniqueCustomers.set(buyerId, {
           id: buyerId,
-          name: order.buyer?.users?.name || 'Unknown Customer',
-          phone: order.buyer?.users?.phone || '',
+          name: (order.buyer as any)?.users?.name || 'Unknown Customer',
+          phone: (order.buyer as any)?.users?.phone || '',
           totalOrders: 0,
           totalSpent: 0,
           firstOrder: order.created_at
@@ -402,7 +402,7 @@ export class AnalyticsService {
     const categoryMap = new Map()
     
     data?.forEach(order => {
-      const category = order.product?.category || 'Other'
+      const category = (order.product as any)?.category || 'Other'
       if (!categoryMap.has(category)) {
         categoryMap.set(category, { category, revenue: 0, orders: 0 })
       }

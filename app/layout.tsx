@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ToasterProvider } from "@/components/providers/toaster-provider";
-import { InstallPrompt } from "@/lib/pwa/install-prompt";
-import { PWALifecycle } from "@/components/pwa/pwa-lifecycle";
+import { PWAWrapper } from "@/components/pwa/pwa-wrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -47,8 +46,7 @@ export default function RootLayout({
       >
         {children}
         <ToasterProvider />
-        <PWALifecycle />
-        <InstallPrompt />
+        <PWAWrapper />
       </body>
     </html>
   );

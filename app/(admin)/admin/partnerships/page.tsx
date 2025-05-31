@@ -22,6 +22,9 @@ import {
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic'
+
 export default function AdminPartnershipsPage() {
   const [applications, setApplications] = useState<PartnershipApplication[]>([])
   const [partners, setPartners] = useState<PartnerWithApplication[]>([])
