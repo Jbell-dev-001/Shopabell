@@ -111,7 +111,7 @@ export default function SignupPage() {
     try {
       // Create a valid email from phone number (remove + and special chars)
       const sanitizedPhone = phoneNumber.replace(/[^0-9]/g, '')
-      const emailFormat = `user${sanitizedPhone}@shopabell.temp`
+      const emailFormat = `user${sanitizedPhone}@example.com`
       
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
