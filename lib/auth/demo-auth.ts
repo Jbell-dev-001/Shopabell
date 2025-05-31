@@ -1,4 +1,14 @@
-import { User } from '@/types/supabase';
+// Demo user type matching auth store
+interface DemoUser {
+  id: string
+  phone: string
+  name: string
+  email: string
+  role: 'seller' | 'buyer' | 'admin'
+  languagePreference: string
+  profileImage: string | null
+  isVerified: boolean
+}
 
 // Demo user credentials and data
 export const DEMO_USERS = {
@@ -89,19 +99,31 @@ export function isDemoAccount(phone: string): boolean {
 /**
  * Get demo user data by phone number
  */
-export function getDemoUser(phone: string): User | null {
+export function getDemoUser(phone: string): DemoUser | null {
   if (!isDemoAccount(phone)) {
     return null;
   }
   
-  return DEMO_USERS[phone as DemoPhoneNumber] as User;
+  const demoUser = DEMO_USERS[phone as DemoPhoneNumber];
+  
+  // Convert to the expected User format
+  return {
+    id: demoUser.id,
+    phone: demoUser.phone,
+    name: demoUser.name,
+    email: demoUser.email,
+    role: demoUser.role,
+    languagePreference: 'en',
+    profileImage: null,
+    isVerified: true
+  };
 }
 
 /**
  * Authenticate a demo user without Supabase
  * Returns user data if authentication succeeds, null otherwise
  */
-export function authenticateDemoUser(phone: string, otp?: string): User | null {
+export async function authenticateDemoUser(phone: string, otp?: string): Promise<DemoUser | null> {
   // For demo accounts, we don't validate OTP
   // Just check if the phone number is a demo account
   if (!isDemoAccount(phone)) {
@@ -114,14 +136,14 @@ export function authenticateDemoUser(phone: string, otp?: string): User | null {
 /**
  * Get all demo users
  */
-export function getAllDemoUsers(): User[] {
-  return Object.values(DEMO_USERS) as User[];
+export function getAllDemoUsers(): DemoUser[] {
+  return Object.keys(DEMO_USERS).map(phone => getDemoUser(phone)!).filter(Boolean);
 }
 
 /**
  * Get demo users by role
  */
-export function getDemoUsersByRole(role: 'seller' | 'buyer' | 'admin'): User[] {
+export function getDemoUsersByRole(role: 'seller' | 'buyer' | 'admin'): DemoUser[] {
   return getAllDemoUsers().filter(user => user.role === role);
 }
 
