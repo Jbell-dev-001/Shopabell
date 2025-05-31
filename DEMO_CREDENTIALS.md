@@ -6,14 +6,16 @@ Welcome to ShopAbell! Here are demo credentials to test the platform functionali
 
 1. **Go to Login Page**: Visit `/login` on your deployed ShopAbell site
 2. **Enter Phone Number**: Use one of the demo phone numbers below
-3. **Get OTP**: In development mode, the OTP will be displayed in the browser console and as a toast notification
-4. **Enter OTP**: Use the 6-digit OTP to complete login
+3. **Get OTP**: The OTP will be displayed prominently on screen in a green box
+4. **Enter OTP**: Copy the displayed OTP to complete login
 
 ## 👥 Demo User Accounts
 
 ### 🏪 Seller Accounts
 
 #### **Demo Seller 1 - Fashion Store**
+
+
 - **Phone**: `+919876543210`
 - **Name**: Priya Sharma
 - **Business**: Fashion Junction
@@ -65,20 +67,20 @@ Welcome to ShopAbell! Here are demo credentials to test the platform functionali
 
 ## 🔐 Authentication Flow
 
-### Development Mode (Localhost/Testing)
+### Demo Mode (All Environments)
 1. Enter any demo phone number
 2. Click "Send OTP"
-3. **OTP will be displayed in**:
-   - Browser console (`F12` → Console tab)
-   - Toast notification (top-right corner)
-4. Enter the displayed OTP (usually `123456`)
+3. **OTP will be displayed prominently**:
+   - 📺 **Large green box on screen** (main display)
+   - 🔔 Toast notification (top-right corner)
+   - 🖥️ Browser console (for developers)
+4. Copy and enter the displayed OTP
 5. Access granted!
 
-### Production Mode
-1. Enter demo phone number
-2. OTP will be "sent" (simulated in demo)
-3. Use `123456` as the OTP for all demo accounts
-4. Login successful!
+### Quick Test
+- **Phone:** `+919876543210`
+- **OTP:** Will appear in green box on screen
+- **Result:** Access to seller dashboard
 
 ## 🎯 What to Test
 

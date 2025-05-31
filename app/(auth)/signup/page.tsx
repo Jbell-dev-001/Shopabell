@@ -24,6 +24,7 @@ export default function SignupPage() {
   const [step, setStep] = useState<'phone' | 'otp' | 'profile'>('phone')
   const [isLoading, setIsLoading] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState('')
+  const [displayOTP, setDisplayOTP] = useState<string>('')
   const [profileData, setProfileData] = useState<ProfileFormData>({
     name: '',
     role: 'buyer'
@@ -53,11 +54,10 @@ export default function SignupPage() {
       await sendOTP(phone, otp)
       storeOTP(phone, otp)
       
-      // In development, show OTP in console
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[DEV] OTP for ${phone}: ${otp}`)
-        toast.info(`Development OTP: ${otp}`)
-      }
+      // Show OTP on screen for demo/development
+      console.log(`[DEV] OTP for ${phone}: ${otp}`)
+      setDisplayOTP(otp)
+      toast.success(`OTP: ${otp}`, { duration: 10000 })
       
       setPhoneNumber(phone)
       setStorePhone(phone)
@@ -98,12 +98,10 @@ export default function SignupPage() {
     await sendOTP(phoneNumber, otp)
     storeOTP(phoneNumber, otp)
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[DEV] Resent OTP for ${phoneNumber}: ${otp}`)
-      toast.info(`Development OTP: ${otp}`)
-    }
-    
-    toast.success('OTP resent successfully!')
+    // Show OTP on screen for demo/development
+    console.log(`[DEV] Resent OTP for ${phoneNumber}: ${otp}`)
+    setDisplayOTP(otp)
+    toast.success(`OTP: ${otp}`, { duration: 10000 })
   }
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
@@ -220,12 +218,21 @@ export default function SignupPage() {
           )}
           
           {step === 'otp' && (
-            <OTPInput
-              onComplete={handleOTPComplete}
-              onResend={handleResendOTP}
-              isLoading={isLoading}
-              phoneNumber={phoneNumber}
-            />
+            <div className="space-y-6">
+              {displayOTP && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                  <p className="text-sm text-green-600 mb-2">🔑 Demo OTP for Testing:</p>
+                  <p className="text-2xl font-bold text-green-800 tracking-widest">{displayOTP}</p>
+                  <p className="text-xs text-green-500 mt-2">Copy this OTP to the field below</p>
+                </div>
+              )}
+              <OTPInput
+                onComplete={handleOTPComplete}
+                onResend={handleResendOTP}
+                isLoading={isLoading}
+                phoneNumber={phoneNumber}
+              />
+            </div>
           )}
           
           {step === 'profile' && (
