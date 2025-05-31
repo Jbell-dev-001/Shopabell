@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export async function POST() {
-  try {
-    const supabase = await createClient()
-    
-    // Demo users data
+async function seedUsers() {
+  const supabase = await createClient()
+  
+  // Demo users data
     const demoUsers = [
       {
         id: '550e8400-e29b-41d4-a716-446655440001',
@@ -132,16 +131,42 @@ export async function POST() {
       console.error('Buyers insert error:', buyersError)
     }
 
-    return NextResponse.json({ 
+    return { 
       success: true, 
       message: 'Demo users seeded successfully',
       users: demoUsers.length,
       sellers: demoSellers.length,
       buyers: demoBuyers.length
-    })
+    }
 
   } catch (error) {
     console.error('Demo seed error:', error)
+    return { 
+      success: false, 
+      error: 'Failed to seed demo users',
+      details: error
+    }
+  }
+}
+
+export async function GET() {
+  try {
+    const result = await seedUsers()
+    return NextResponse.json(result)
+  } catch (error) {
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Failed to seed demo users',
+      details: error
+    }, { status: 500 })
+  }
+}
+
+export async function POST() {
+  try {
+    const result = await seedUsers()
+    return NextResponse.json(result)
+  } catch (error) {
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to seed demo users',
