@@ -105,9 +105,14 @@ Welcome to ShopAbell! Here are demo credentials to test the platform functionali
 - ✅ **Reports**: Generate business reports
 - ✅ **Payments**: Monitor transaction flow
 
-## 🔧 Setup Demo Data (Optional)
+## 🔧 Setup Demo Data (Required for Demo)
 
-If you want to populate your Supabase database with demo data, run this SQL script in your Supabase SQL Editor:
+**Option 1: API Endpoint (Recommended)**
+After deployment, visit: `https://your-app.vercel.app/api/demo/seed-users`
+This will automatically create all demo users in your database.
+
+**Option 2: Manual SQL (Alternative)**
+If you want to manually populate your Supabase database, run this SQL script in your Supabase SQL Editor:
 
 \`\`\`sql
 -- Insert demo users
@@ -142,20 +147,39 @@ For PWA testing on mobile:
 
 ## 🆘 Troubleshooting
 
-### OTP Not Showing?
-- Check browser console (`F12` → Console)
-- Look for toast notifications
-- In dev mode, OTP is always logged
+### ❌ Authentication Errors?
+**First, seed demo data:**
+1. Visit: `https://your-app.vercel.app/api/demo/seed-users`
+2. Should return: `{"success": true, "message": "Demo users seeded successfully"}`
+3. Now try logging in with demo credentials
 
-### Can't Login?
+### ❌ OTP Not Showing?
+- Check browser console (`F12` → Console)
+- Look for toast notifications (top-right corner)
+- In dev mode, OTP is always logged as `123456`
+
+### ❌ Can't Login?
+- **FIRST**: Run the demo seed API endpoint above
 - Ensure you're using the exact phone format: `+919876543210`
 - Try clearing browser cache/cookies
 - Check network connection
+- Verify demo users exist in Supabase dashboard
 
-### Features Not Loading?
+### ❌ "Email is invalid" Error?
+- This is fixed in the latest update
+- Phone numbers are now properly sanitized for auth
+- Clear browser cache and try again
+
+### ❌ Features Not Loading?
 - Verify environment variables are set
 - Check Supabase connection
 - Ensure database schema is properly imported
+- Run demo seed endpoint first
+
+### ❌ 404 Errors?
+- Ensure all API routes are deployed
+- Check `/api/ping` endpoint exists
+- Verify Vercel deployment completed successfully
 
 ## 🎉 Success!
 

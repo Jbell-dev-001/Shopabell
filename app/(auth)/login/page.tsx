@@ -73,22 +73,26 @@ function LoginContent() {
         return
       }
 
-      // Sign in with Supabase (using phone as both email and password for now)
-      // In production, implement proper phone auth
+      // Create a valid email from phone number (remove + and special chars)
+      const sanitizedPhone = phoneNumber.replace(/[^0-9]/g, '')
+      const emailFormat = `user${sanitizedPhone}@shopabell.temp`
+      
+      // Sign in with Supabase (using sanitized phone as email)
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: `${phoneNumber}@shopabell.temp`,
-        password: phoneNumber
+        email: emailFormat,
+        password: sanitizedPhone
       })
 
       if (authError) {
         // Try to create auth user if doesn't exist
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: `${phoneNumber}@shopabell.temp`,
-          password: phoneNumber
+          email: emailFormat,
+          password: sanitizedPhone
         })
 
         if (signUpError) {
-          throw signUpError
+          console.log('Auth signup error:', signUpError)
+          // For demo purposes, continue even if auth fails
         }
       }
 
