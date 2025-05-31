@@ -173,6 +173,32 @@ function LoginContent() {
             </div>
           )}
         </div>
+
+        {/* Demo Credentials */}
+        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-blue-800 mb-3 text-center">📱 Demo Credentials for Testing</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="bg-white rounded p-3 border border-blue-100 shadow-sm">
+              <div className="font-medium text-blue-700 mb-1">🏪 Seller</div>
+              <div className="text-blue-600 font-mono text-sm">+919876543210</div>
+              <div className="text-blue-500 text-xs mt-1">Fashion Junction</div>
+            </div>
+            <div className="bg-white rounded p-3 border border-blue-100 shadow-sm">
+              <div className="font-medium text-blue-700 mb-1">🛒 Buyer</div>
+              <div className="text-blue-600 font-mono text-sm">+919876543220</div>
+              <div className="text-blue-500 text-xs mt-1">Vikram Singh</div>
+            </div>
+            <div className="bg-white rounded p-3 border border-blue-100 shadow-sm">
+              <div className="font-medium text-blue-700 mb-1">👨‍💼 Admin</div>
+              <div className="text-blue-600 font-mono text-sm">+919876543200</div>
+              <div className="text-blue-500 text-xs mt-1">Platform Admin</div>
+            </div>
+          </div>
+          <p className="text-xs text-blue-600 text-center mt-3">
+            Demo users available for testing • 
+            <a href="/demo-setup" className="underline font-medium ml-1">Set up demo users</a>
+          </p>
+        </div>
       </div>
     </div>
   )
