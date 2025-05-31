@@ -107,10 +107,12 @@ Welcome to ShopAbell! Here are demo credentials to test the platform functionali
 - ✅ **Reports**: Generate business reports
 - ✅ **Payments**: Monitor transaction flow
 
-## 🔧 Setup Demo Data (Required for Demo)
+## 🔧 Setup Demo Data (REQUIRED FIRST!)
+
+**⚠️ IMPORTANT: You MUST seed demo users before testing login!**
 
 **Option 1: API Endpoint (Recommended)**
-After deployment, visit: `https://your-app.vercel.app/api/demo/seed-users`
+After deployment, visit: `https://shopabellv1.vercel.app/api/demo/seed-users`
 This will automatically create all demo users in your database.
 
 **Option 2: Manual SQL (Alternative)**

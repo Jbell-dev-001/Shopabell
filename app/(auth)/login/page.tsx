@@ -75,7 +75,7 @@ function LoginContent() {
 
       // Create a valid email from phone number (remove + and special chars)
       const sanitizedPhone = phoneNumber.replace(/[^0-9]/g, '')
-      const emailFormat = `user${sanitizedPhone}@example.com`
+      const emailFormat = `${sanitizedPhone}@demo.shopabell.com`
       
       // Sign in with Supabase (using sanitized phone as email)
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
