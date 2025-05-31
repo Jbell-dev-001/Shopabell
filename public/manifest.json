@@ -1,0 +1,150 @@
+{
+  "name": "ShopAbell - Social Commerce Platform",
+  "short_name": "ShopAbell",
+  "description": "Transform your social media presence into a thriving e-commerce business with ShopAbell's social commerce platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "categories": ["shopping", "business", "social"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Seller Dashboard",
+      "short_name": "Dashboard",
+      "description": "Access your seller dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icons/shortcut-dashboard.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Add Product",
+      "short_name": "Add Product",
+      "description": "Add a new product to your store",
+      "url": "/dashboard/products/new",
+      "icons": [
+        {
+          "src": "/icons/shortcut-add.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Live Selling",
+      "short_name": "Live Sell",
+      "description": "Start live selling session",
+      "url": "/dashboard/livestream",
+      "icons": [
+        {
+          "src": "/icons/shortcut-live.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "short_name": "Orders",
+      "description": "Manage your orders",
+      "url": "/dashboard/orders",
+      "icons": [
+        {
+          "src": "/icons/shortcut-orders.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Seller Dashboard"
+    },
+    {
+      "src": "/screenshots/mobile-store.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Store View"
+    }
+  ],
+  "features": [
+    "Cross Platform",
+    "Voice Input",
+    "Offline Support",
+    "Push Notifications",
+    "Camera Integration"
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.shopabell.app",
+      "id": "com.shopabell.app"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/shopabell/id123456789",
+      "id": "123456789"
+    }
+  ]
+}
