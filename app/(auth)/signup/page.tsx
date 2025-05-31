@@ -9,6 +9,7 @@ import { OTPInput } from '@/components/auth/otp-input'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { generateOTP, sendOTP, storeOTP, verifyOTP, detectLanguageFromPhone } from '@/lib/auth/utils'
 import { createClient } from '@/lib/supabase/client'
+import { isDemoAccount, getDemoUser } from '@/lib/auth/demo-auth'
 import { cn } from '@/lib/utils/cn'
 import { Store, User } from 'lucide-react'
 
@@ -36,6 +37,16 @@ export default function SignupPage() {
   const handlePhoneSubmit = async (phone: string) => {
     setIsLoading(true)
     try {
+      // Check if it's a demo account
+      if (isDemoAccount(phone)) {
+        const demoUser = getDemoUser(phone)
+        if (demoUser) {
+          toast.error(`This is a demo account. Please use the login page to sign in as ${demoUser.name}.`)
+          setIsLoading(false)
+          return
+        }
+      }
+
       // Check if user already exists
       const { data: existingUser } = await supabase
         .from('users')
@@ -111,7 +122,8 @@ export default function SignupPage() {
     try {
       // Create a valid email from phone number (remove + and special chars)
       const sanitizedPhone = phoneNumber.replace(/[^0-9]/g, '')
-      const emailFormat = `${sanitizedPhone}@demo.shopabell.com`
+      // Use a simpler email format that Supabase will accept
+      const emailFormat = `user.${sanitizedPhone}@shopabell.app`
       
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({

@@ -9,6 +9,7 @@ import { OTPInput } from '@/components/auth/otp-input'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { generateOTP, sendOTP, storeOTP, verifyOTP } from '@/lib/auth/utils'
 import { createClient } from '@/lib/supabase/client'
+import { isDemoAccount, authenticateDemoUser } from '@/lib/auth/demo-auth'
 
 function LoginContent() {
   const router = useRouter()
@@ -26,7 +27,27 @@ function LoginContent() {
   const handlePhoneSubmit = async (phone: string) => {
     setIsLoading(true)
     try {
-      // Check if user exists
+      // Check if it's a demo account
+      if (isDemoAccount(phone)) {
+        // For demo accounts, skip DB check and proceed with OTP
+        const otp = generateOTP()
+        await sendOTP(phone, otp)
+        storeOTP(phone, otp)
+        
+        // Show OTP on screen for demo/development
+        console.log(`[DEV] OTP for ${phone}: ${otp}`)
+        setDisplayOTP(otp)
+        toast.success(`OTP: ${otp}`, { duration: 10000 })
+        
+        setPhoneNumber(phone)
+        setStorePhone(phone)
+        setStep('otp')
+        toast.success('OTP sent successfully!')
+        setIsLoading(false)
+        return
+      }
+
+      // For non-demo accounts, check if user exists
       const { data: existingUser } = await supabase
         .from('users')
         .select('*')
@@ -64,7 +85,33 @@ function LoginContent() {
   const handleOTPComplete = async (otp: string) => {
     setIsLoading(true)
     try {
-      // Verify OTP
+      // Check if it's a demo account
+      if (isDemoAccount(phoneNumber)) {
+        // Authenticate demo user (bypasses real OTP check)
+        const demoUser = await authenticateDemoUser(phoneNumber, otp)
+        
+        if (demoUser) {
+          setUser({
+            id: demoUser.id,
+            phone: demoUser.phone,
+            name: demoUser.name,
+            email: demoUser.email,
+            role: demoUser.role,
+            languagePreference: demoUser.languagePreference,
+            profileImage: demoUser.profileImage,
+            isVerified: demoUser.isVerified
+          })
+          
+          toast.success('Login successful!')
+          router.push(returnTo)
+        } else {
+          toast.error('Authentication failed')
+        }
+        setIsLoading(false)
+        return
+      }
+
+      // For non-demo accounts, verify OTP normally
       const isValid = verifyOTP(phoneNumber, otp)
       
       if (!isValid) {
@@ -73,30 +120,7 @@ function LoginContent() {
         return
       }
 
-      // Create a valid email from phone number (remove + and special chars)
-      const sanitizedPhone = phoneNumber.replace(/[^0-9]/g, '')
-      const emailFormat = `${sanitizedPhone}@demo.shopabell.com`
-      
-      // Sign in with Supabase (using sanitized phone as email)
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: emailFormat,
-        password: sanitizedPhone
-      })
-
-      if (authError) {
-        // Try to create auth user if doesn't exist
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: emailFormat,
-          password: sanitizedPhone
-        })
-
-        if (signUpError) {
-          console.log('Auth signup error:', signUpError)
-          // For demo purposes, continue even if auth fails
-        }
-      }
-
-      // Fetch user data
+      // Fetch user data from Supabase
       const { data: userData } = await supabase
         .from('users')
         .select('*')
@@ -177,6 +201,7 @@ function LoginContent() {
         {/* Demo Credentials */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-sm font-medium text-blue-800 mb-3 text-center">📱 Demo Credentials for Testing</h3>
+          
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div className="bg-white rounded p-3 border border-blue-100 shadow-sm">
               <div className="font-medium text-blue-700 mb-1">🏪 Seller</div>
