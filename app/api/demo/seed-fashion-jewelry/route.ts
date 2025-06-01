@@ -1,9 +1,74 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+
+export async function DELETE() {
+  try {
+    const supabase = await createServiceRoleClient()
+    
+    // Delete demo data in reverse order of creation to avoid foreign key constraints
+    console.log('Deleting demo data...')
+    
+    // Delete products first
+    await supabase.from('products').delete().in('seller_id', [
+      '11111111-1111-1111-1111-111111111111',
+      '22222222-2222-2222-2222-222222222222',
+      '33333333-3333-3333-3333-333333333333',
+      '44444444-4444-4444-4444-444444444444',
+      '55555555-5555-5555-5555-555555555555',
+      '66666666-6666-6666-6666-666666666666',
+      '77777777-7777-7777-7777-777777777777'
+    ])
+    
+    // Delete buyer profiles
+    await supabase.from('buyers').delete().in('id', [
+      'b1111111-1111-1111-1111-111111111111',
+      'b2222222-2222-2222-2222-222222222222',
+      'b3333333-3333-3333-3333-333333333333'
+    ])
+    
+    // Delete seller profiles
+    await supabase.from('sellers').delete().in('id', [
+      '11111111-1111-1111-1111-111111111111',
+      '22222222-2222-2222-2222-222222222222',
+      '33333333-3333-3333-3333-333333333333',
+      '44444444-4444-4444-4444-444444444444',
+      '55555555-5555-5555-5555-555555555555',
+      '66666666-6666-6666-6666-666666666666',
+      '77777777-7777-7777-7777-777777777777'
+    ])
+    
+    // Delete users
+    await supabase.from('users').delete().in('id', [
+      '11111111-1111-1111-1111-111111111111',
+      '22222222-2222-2222-2222-222222222222',
+      '33333333-3333-3333-3333-333333333333',
+      '44444444-4444-4444-4444-444444444444',
+      '55555555-5555-5555-5555-555555555555',
+      '66666666-6666-6666-6666-666666666666',
+      '77777777-7777-7777-7777-777777777777',
+      'b1111111-1111-1111-1111-111111111111',
+      'b2222222-2222-2222-2222-222222222222',
+      'b3333333-3333-3333-3333-333333333333'
+    ])
+    
+    console.log('Demo data deleted successfully')
+    
+    return NextResponse.json({ 
+      message: 'Demo data deleted successfully' 
+    })
+    
+  } catch (error) {
+    console.error('Error deleting demo data:', error)
+    return NextResponse.json({ 
+      error: 'Failed to delete demo data',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
+  }
+}
 
 export async function POST() {
   try {
-    const supabase = await createClient()
+    const supabase = await createServiceRoleClient()
     
     // Check if demo data already exists
     const { data: existingUser } = await supabase
@@ -100,7 +165,9 @@ export async function POST() {
         name: 'Rahul Kumar',
         email: 'rahul@demo.com',
         role: 'buyer',
-        is_verified: true
+        language_preference: 'en',
+        is_verified: true,
+        timezone: 'Asia/Kolkata'
       },
       {
         id: 'b2222222-2222-2222-2222-222222222222',
@@ -108,7 +175,9 @@ export async function POST() {
         name: 'Sneha Sharma',
         email: 'sneha@demo.com',
         role: 'buyer',
-        is_verified: true
+        language_preference: 'en',
+        is_verified: true,
+        timezone: 'Asia/Kolkata'
       },
       {
         id: 'b3333333-3333-3333-3333-333333333333',
@@ -116,19 +185,23 @@ export async function POST() {
         name: 'Amit Patel',
         email: 'amit@demo.com',
         role: 'buyer',
-        is_verified: true
+        language_preference: 'hi',
+        is_verified: true,
+        timezone: 'Asia/Kolkata'
       }
     ]
 
     // Insert users
+    console.log('Inserting users...')
     const { error: usersError } = await supabase
       .from('users')
       .insert(demoUsers)
     
     if (usersError) {
       console.error('Error creating users:', usersError)
-      throw usersError
+      throw new Error(`Failed to create users: ${usersError.message}`)
     }
+    console.log('Users created successfully')
 
     // Create seller profiles
     const sellerProfiles = [
@@ -282,14 +355,16 @@ export async function POST() {
     ]
 
     // Insert seller profiles
+    console.log('Inserting seller profiles...')
     const { error: sellersError } = await supabase
       .from('sellers')
       .insert(sellerProfiles)
     
     if (sellersError) {
       console.error('Error creating sellers:', sellersError)
-      throw sellersError
+      throw new Error(`Failed to create sellers: ${sellersError.message}`)
     }
+    console.log('Seller profiles created successfully')
 
     // Create buyer profiles
     const buyerProfiles = [
@@ -310,17 +385,21 @@ export async function POST() {
       }
     ]
 
+    console.log('Inserting buyer profiles...')
     const { error: buyersError } = await supabase
       .from('buyers')
       .insert(buyerProfiles)
     
     if (buyersError) {
       console.error('Error creating buyers:', buyersError)
-      throw buyersError
+      throw new Error(`Failed to create buyers: ${buyersError.message}`)
     }
+    console.log('Buyer profiles created successfully')
 
     // Create sample products
+    console.log('Creating sample products...')
     await createSampleProducts(supabase)
+    console.log('Sample products created successfully')
 
     return NextResponse.json({ 
       message: 'Demo fashion and jewelry data created successfully',
@@ -344,9 +423,11 @@ export async function POST() {
     
   } catch (error) {
     console.error('Error in seed-fashion-jewelry:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json({ 
       error: 'Failed to create demo data',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : 'No stack trace'
     }, { status: 500 })
   }
 }
@@ -355,7 +436,7 @@ async function createSampleProducts(supabase: any) {
   const products = [
     // Priya Fashion House Products
     {
-      id: 'p1111111-1111-1111-1111-111111111111',
+      id: '21111111-1111-1111-1111-111111111111',
       seller_id: '11111111-1111-1111-1111-111111111111',
       name: 'Banarasi Silk Saree - Royal Blue',
       description: 'Exquisite handwoven Banarasi silk saree with intricate gold zari work. Perfect for weddings and special occasions.',
@@ -370,11 +451,10 @@ async function createSampleProducts(supabase: any) {
       is_active: true,
       is_featured: true,
       view_count: 1250,
-      rating: 4.8,
       cod_available: true
     },
     {
-      id: 'p1111111-1111-1111-1111-111111111112',
+      id: '21111111-1111-1111-1111-111111111112',
       seller_id: '11111111-1111-1111-1111-111111111111',
       name: 'Designer Georgette Saree - Pink',
       description: 'Beautiful designer georgette saree with sequin work and embroidered border.',
@@ -389,12 +469,11 @@ async function createSampleProducts(supabase: any) {
       is_active: true,
       is_featured: false,
       view_count: 890,
-      rating: 4.7,
       cod_available: true
     },
     // Add more products for other sellers...
     {
-      id: 'p4444444-4444-4444-4444-444444444441',
+      id: '24444444-4444-4444-4444-444444444441',
       seller_id: '44444444-4444-4444-4444-444444444444',
       name: '22k Gold Temple Necklace Set',
       description: 'Traditional South Indian temple jewelry necklace set. Made with 22k gold, featuring intricate Lakshmi pendant.',
@@ -409,7 +488,6 @@ async function createSampleProducts(supabase: any) {
       is_active: true,
       is_featured: true,
       view_count: 3200,
-      rating: 4.9,
       cod_available: false
     }
   ]
@@ -420,6 +498,6 @@ async function createSampleProducts(supabase: any) {
   
   if (error) {
     console.error('Error creating products:', error)
-    throw error
+    throw new Error(`Failed to create products: ${error.message}`)
   }
 }
