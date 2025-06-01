@@ -17,7 +17,8 @@
     "deploy:staging": "tsx scripts/deploy.ts",
     "deploy:production": "tsx scripts/deploy.ts --production",
     "deploy:dry-run": "tsx scripts/deploy.ts --dry-run",
-    "health-check": "tsx -e \"import('./scripts/test-runner').then(m => m.healthCheck()).then(ok => process.exit(ok ? 0 : 1))\""
+    "health-check": "tsx -e \"import('./scripts/test-runner').then(m => m.healthCheck()).then(ok => process.exit(ok ? 0 : 1))\"",
+    "seed-demo": "tsx scripts/seed-demo-data.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

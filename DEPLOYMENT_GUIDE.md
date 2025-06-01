@@ -87,12 +87,37 @@ FROM pg_tables
 WHERE schemaname = 'public';
 ```
 
-### 4. Seed Demo Data (Optional)
+### 4. Seed Demo Data (Recommended)
 
+**Option A: Quick API Seeding**
 ```bash
-# Seed demo fashion and jewelry sellers
-curl -X POST http://localhost:3000/api/demo/seed-users
+# Fashion & jewelry sellers with authentic Indian products
+curl -X POST https://your-app.vercel.app/api/demo/seed-fashion-jewelry
+
+# General demo users and buyers  
+curl -X POST https://your-app.vercel.app/api/demo/seed-users
+
+# Sample chat conversations
+curl -X POST https://your-app.vercel.app/api/demo/create-sample-chats
 ```
+
+**Option B: Automated Script**
+```bash
+# Seed all demo data at once
+npm run seed-demo https://your-app.vercel.app
+```
+
+**Option C: Demo Setup Page**
+Visit: `https://your-app.vercel.app/demo-setup`
+
+**Option D: Manual Database**
+Run the SQL from `supabase/demo-fashion-jewelry-data.sql` in Supabase SQL Editor
+
+**Demo Accounts Created:**
+- 7 Indian fashion/jewelry sellers with authentic products
+- Multiple buyer accounts for testing
+- Sample chat conversations with "sell" commands
+- Order history and analytics data
 
 ## Local Development
 
