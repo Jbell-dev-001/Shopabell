@@ -1,4 +1,4 @@
-interface SellCommandResult {
+export interface SellCommandResult {
   isValid: boolean
   price?: number
   quantity?: number
@@ -8,7 +8,29 @@ interface SellCommandResult {
     value: number
   }
   paymentMethod?: 'cod' | 'upi' | 'card'
+  shipping?: {
+    express?: boolean
+    address?: string
+  }
   error?: string
+}
+
+// Enhanced patterns for Indian market
+const INDIAN_SIZES = {
+  clothing: ['xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl', 'free size', 'one size', '32', '34', '36', '38', '40', '42', '44'],
+  jewelry: ['adjustable', 'free size', '2.4', '2.6', '2.8', '16', '17', '18', '19', '20', '21', '22'],
+  footwear: ['6', '7', '8', '9', '10', '11', '36', '37', '38', '39', '40', '41', '42']
+}
+
+const INDIAN_COLORS = {
+  traditional: ['gold', 'silver', 'maroon', 'mehendi', 'turquoise', 'coral', 'ivory', 'beige'],
+  modern: ['red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'purple', 'orange', 'brown', 'grey', 'gray'],
+  patterns: ['floral', 'printed', 'embroidered', 'sequined', 'plain', 'striped']
+}
+
+const MATERIALS = {
+  clothing: ['cotton', 'silk', 'polyester', 'wool', 'leather', 'denim', 'linen', 'georgette', 'chiffon', 'velvet', 'satin', 'rayon'],
+  jewelry: ['gold', 'silver', 'brass', 'copper', 'oxidized', 'german silver', 'kundan', 'pearl', 'diamond', 'gemstone']
 }
 
 export function parseSellCommand(message: string): SellCommandResult {
@@ -62,27 +84,28 @@ export function parseSellCommand(message: string): SellCommandResult {
   // Extract variants (color, size, material)
   const variants: Record<string, string> = {}
   
-  // Color detection
-  const colors = ['red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'purple', 'orange', 'brown', 'grey', 'gray']
-  for (const color of colors) {
+  // Color detection (enhanced for Indian market)
+  const allColors = [...INDIAN_COLORS.traditional, ...INDIAN_COLORS.modern, ...INDIAN_COLORS.patterns]
+  for (const color of allColors) {
     if (remaining.includes(color)) {
       variants.color = color
       remaining = remaining.replace(color, '').trim()
     }
   }
   
-  // Size detection
-  const sizes = ['xs', 'small', 'medium', 'large', 'xl', 'xxl', 'xxxl', 's', 'm', 'l']
-  for (const size of sizes) {
-    if (remaining.includes(size)) {
+  // Size detection (enhanced)
+  const allSizes = [...INDIAN_SIZES.clothing, ...INDIAN_SIZES.jewelry, ...INDIAN_SIZES.footwear]
+  for (const size of allSizes) {
+    const sizePattern = new RegExp(`\\b${size}\\b`, 'i')
+    if (sizePattern.test(remaining)) {
       variants.size = size.toUpperCase()
-      remaining = remaining.replace(size, '').trim()
+      remaining = remaining.replace(sizePattern, '').trim()
     }
   }
   
-  // Material detection
-  const materials = ['cotton', 'silk', 'polyester', 'wool', 'leather', 'denim', 'linen']
-  for (const material of materials) {
+  // Material detection (enhanced)
+  const allMaterials = [...MATERIALS.clothing, ...MATERIALS.jewelry]
+  for (const material of allMaterials) {
     if (remaining.includes(material)) {
       variants.material = material
       remaining = remaining.replace(material, '').trim()
@@ -118,6 +141,50 @@ export function parseSellCommand(message: string): SellCommandResult {
     result.paymentMethod = 'upi'
   } else if (remaining.includes('card')) {
     result.paymentMethod = 'card'
+  }
+  
+  // Extract shipping preferences
+  if (remaining.includes('express') || remaining.includes('fast')) {
+    result.shipping = { express: true }
+  }
+  
+  return result
+}
+
+// Helper function to extract product details from natural language
+export function extractProductFromMessage(message: string): {
+  productRef?: string
+  description?: string
+} {
+  const result: any = {}
+  
+  // Check for "this" or "that" references
+  if (message.includes('this') || message.includes('that')) {
+    result.productRef = 'context'
+  }
+  
+  // Check for specific product references
+  const productPatterns = [
+    /product #?(\d+)/i,
+    /item #?(\d+)/i,
+    /#(\d+)/
+  ]
+  
+  for (const pattern of productPatterns) {
+    const match = message.match(pattern)
+    if (match) {
+      result.productRef = match[1]
+      break
+    }
+  }
+  
+  // Extract descriptive terms
+  const descriptiveWords = message.split(' ').filter(word => 
+    word.length > 3 && !['sell', 'this', 'that', 'with', 'for'].includes(word)
+  )
+  
+  if (descriptiveWords.length > 0) {
+    result.description = descriptiveWords.join(' ')
   }
   
   return result

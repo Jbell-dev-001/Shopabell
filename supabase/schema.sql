@@ -18,6 +18,7 @@ CREATE TYPE priority_level AS ENUM ('low', 'medium', 'high', 'urgent');
 CREATE TYPE livestream_status AS ENUM ('scheduled', 'recording', 'processing', 'completed', 'cancelled');
 CREATE TYPE livestream_platform AS ENUM ('facebook', 'instagram', 'youtube', 'whatsapp_status');
 CREATE TYPE shipping_status AS ENUM ('created', 'picked_up', 'in_transit', 'delivered', 'returned', 'cancelled');
+CREATE TYPE onboarding_step AS ENUM ('verification', 'business_details', 'store_setup', 'first_product', 'completed');
 
 -- Create users table
 CREATE TABLE users (
@@ -37,34 +38,48 @@ CREATE TABLE users (
     app_version VARCHAR(20)
 );
 
+-- Create onboarding_sessions table
+CREATE TABLE onboarding_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    phone_number VARCHAR(20) UNIQUE NOT NULL,
+    step onboarding_step NOT NULL,
+    data JSONB DEFAULT '{}' NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
 -- Create sellers table
 CREATE TABLE sellers (
-    id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    phone VARCHAR(20) UNIQUE NOT NULL,
     business_name VARCHAR(255) NOT NULL,
-    business_category VARCHAR(100) NOT NULL,
+    business_type VARCHAR(100) NOT NULL,
+    owner_name VARCHAR(255) NOT NULL,
+    business_address TEXT NOT NULL,
+    gst_number VARCHAR(30),
+    bank_account_number VARCHAR(50) NOT NULL,
+    ifsc_code VARCHAR(15) NOT NULL,
+    pan_number VARCHAR(20) NOT NULL,
+    store_name VARCHAR(255) NOT NULL,
+    store_description TEXT,
+    store_logo TEXT,
+    store_slug VARCHAR(100) UNIQUE,
     upi_id VARCHAR(100),
-    bank_account VARCHAR(50),
-    ifsc_code VARCHAR(15),
-    pan_number VARCHAR(20),
-    aadhaar_number VARCHAR(255), -- encrypted
-    gstin VARCHAR(30),
-    pickup_address JSONB,
     virtual_account_number VARCHAR(20),
     virtual_upi_id VARCHAR(100),
     subscription_plan subscription_plan DEFAULT 'free' NOT NULL,
     subscription_expires DATE,
     subscription_payment_history JSONB,
     onboarding_completed BOOLEAN DEFAULT FALSE NOT NULL,
-    onboarding_step INTEGER DEFAULT 0 NOT NULL,
+    onboarding_completed_at TIMESTAMPTZ,
     verification_status verification_status DEFAULT 'pending' NOT NULL,
-    store_slug VARCHAR(100) UNIQUE NOT NULL,
     store_theme VARCHAR(50) DEFAULT 'default' NOT NULL,
     store_settings JSONB,
     business_hours JSONB,
     auto_reply_enabled BOOLEAN DEFAULT FALSE NOT NULL,
     auto_reply_message TEXT,
     commission_rate DECIMAL(5,2) DEFAULT 3.0 NOT NULL,
-    referred_by UUID REFERENCES users(id),
     total_sales DECIMAL(12,2) DEFAULT 0 NOT NULL,
     total_orders INTEGER DEFAULT 0 NOT NULL,
     rating DECIMAL(3,2) DEFAULT 0 NOT NULL,
@@ -72,7 +87,25 @@ CREATE TABLE sellers (
     last_live_session TIMESTAMPTZ,
     preferred_couriers JSONB,
     shipping_settings JSONB,
-    tax_settings JSONB
+    tax_settings JSONB,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- Create stores table
+CREATE TABLE stores (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    seller_id UUID NOT NULL REFERENCES sellers(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    logo_url TEXT,
+    banner_url TEXT,
+    theme VARCHAR(50) DEFAULT 'default' NOT NULL,
+    settings JSONB DEFAULT '{}' NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 -- Create buyers table

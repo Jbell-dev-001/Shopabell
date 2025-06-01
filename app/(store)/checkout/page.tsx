@@ -15,6 +15,7 @@ import { useAuthStore } from '@/lib/stores/auth-store'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { PaymentGateway } from '@/lib/payments/payment-gateway'
 
 const checkoutSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -137,9 +138,49 @@ export default function CheckoutPage() {
       const allOrders = await Promise.all(orderPromises)
       const flatOrders = allOrders.flat()
 
-      // Simulate payment processing
+      // Process payment using our payment gateway
       if (paymentMethod !== 'cod') {
-        await simulatePayment(finalAmount, paymentMethod)
+        const paymentRequest = {
+          amount: finalAmount,
+          currency: 'INR',
+          orderId: flatOrders[0].id,
+          customerPhone: data.phone,
+          customerName: data.name,
+          paymentMethod: paymentMethod as 'upi' | 'card',
+          upiId: paymentMethod === 'upi' ? `${data.phone}@paytm` : undefined
+        }
+
+        const paymentResponse = await PaymentGateway.processPayment(paymentRequest)
+        
+        if (!paymentResponse.success) {
+          throw new Error(paymentResponse.message || 'Payment failed')
+        }
+
+        // Update order payment status
+        await Promise.all(flatOrders.map(order =>
+          supabase
+            .from('orders')
+            .update({
+              payment_status: 'completed',
+              payment_transaction_id: paymentResponse.transactionId
+            })
+            .eq('id', order.id)
+        ))
+
+        // Create payment transaction record
+        await supabase
+          .from('payment_transactions')
+          .insert({
+            order_id: flatOrders[0].id,
+            transaction_id: paymentResponse.transactionId,
+            gateway_transaction_id: paymentResponse.gatewayTransactionId,
+            payment_method: paymentMethod,
+            gateway: 'decentro',
+            amount: paymentResponse.amount,
+            status: paymentResponse.status,
+            fees: paymentResponse.fees,
+            gateway_response: { ...paymentResponse }
+          })
       }
 
       // Clear cart
@@ -149,22 +190,9 @@ export default function CheckoutPage() {
       router.push(`/order-success?orderId=${flatOrders[0].id}`)
     } catch (error) {
       console.error('Checkout error:', error)
-      toast.error('Failed to place order. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to place order. Please try again.')
     } finally {
       setIsProcessing(false)
-    }
-  }
-
-  const simulatePayment = async (amount: number, method: string) => {
-    // Simulate payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // In production, this would integrate with actual payment gateways
-    console.log(`Processing ${method} payment for ₹${amount}`)
-    
-    return {
-      transactionId: `TXN${Date.now()}`,
-      status: 'success'
     }
   }
 

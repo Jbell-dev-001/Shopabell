@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Video, Plus, Eye, Settings } from 'lucide-react'
+import { Video, Plus, Eye, Settings, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CaptureWidget } from '@/components/livestream/capture-widget'
+import { VideoUploadWidget } from '@/components/livestream/video-upload-widget'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
@@ -23,6 +24,7 @@ export default function LivestreamPage() {
   const { user } = useAuthStore()
   const [sessions, setSessions] = useState<LiveSession[]>([])
   const [showWidget, setShowWidget] = useState(false)
+  const [showUploadWidget, setShowUploadWidget] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
 
@@ -66,19 +68,40 @@ export default function LivestreamPage() {
             Capture products from your livestreams automatically
           </p>
         </div>
-        <Button 
-          onClick={() => setShowWidget(!showWidget)}
-          className="flex items-center gap-2"
-        >
-          <Video className="w-4 h-4" />
-          {showWidget ? 'Hide Capture' : 'Start Capturing'}
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            onClick={() => setShowWidget(!showWidget)}
+            className="flex items-center gap-2"
+          >
+            <Video className="w-4 h-4" />
+            {showWidget ? 'Hide Capture' : 'Start Capturing'}
+          </Button>
+          <Button 
+            onClick={() => setShowUploadWidget(!showUploadWidget)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Upload className="w-4 h-4" />
+            {showUploadWidget ? 'Hide Upload' : 'Upload Video'}
+          </Button>
+        </div>
       </div>
 
       {/* Capture Widget */}
       {showWidget && (
         <div className="mb-8">
           <CaptureWidget />
+        </div>
+      )}
+
+      {/* Video Upload Widget */}
+      {showUploadWidget && (
+        <div className="mb-8">
+          <VideoUploadWidget 
+            onFramesCaptured={() => {
+              fetchSessions() // Refresh sessions after processing
+            }}
+          />
         </div>
       )}
 
@@ -216,7 +239,7 @@ export default function LivestreamPage() {
       </div>
 
       {/* Getting Started Guide */}
-      {sessions.length === 0 && !showWidget && (
+      {sessions.length === 0 && !showWidget && !showUploadWidget && (
         <div className="mt-8 bg-indigo-50 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-indigo-900 mb-4">
             🎥 Transform Your Live Streams into Products
@@ -224,15 +247,25 @@ export default function LivestreamPage() {
           <div className="space-y-3 text-sm text-indigo-800">
             <p>• Start a livestream on Facebook, Instagram, or YouTube</p>
             <p>• Use our capture widget to automatically screenshot products</p>
+            <p>• Or upload a recorded livestream video to extract products</p>
             <p>• AI processes images and creates your product catalog</p>
             <p>• Customers can buy products they saw in your live stream</p>
           </div>
-          <Button 
-            onClick={() => setShowWidget(true)}
-            className="mt-4"
-          >
-            Try it Now
-          </Button>
+          <div className="flex gap-3 mt-4">
+            <Button 
+              onClick={() => setShowWidget(true)}
+            >
+              <Video className="w-4 h-4 mr-2" />
+              Try Live Capture
+            </Button>
+            <Button 
+              onClick={() => setShowUploadWidget(true)}
+              variant="outline"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Video
+            </Button>
+          </div>
         </div>
       )}
     </div>

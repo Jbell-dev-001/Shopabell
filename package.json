@@ -8,7 +8,16 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "build:vercel": "npm run type-check && npm run build"
+    "build:vercel": "npm run type-check && npm run build",
+    "test": "tsx scripts/test-runner.ts",
+    "test:api": "tsx scripts/test-runner.ts --api-only",
+    "test:components": "tsx scripts/test-runner.ts --components-only",
+    "test:performance": "tsx scripts/test-runner.ts --performance-only",
+    "deploy": "tsx scripts/deploy.ts",
+    "deploy:staging": "tsx scripts/deploy.ts",
+    "deploy:production": "tsx scripts/deploy.ts --production",
+    "deploy:dry-run": "tsx scripts/deploy.ts --dry-run",
+    "health-check": "tsx -e \"import('./scripts/test-runner').then(m => m.healthCheck()).then(ok => process.exit(ok ? 0 : 1))\""
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -43,12 +52,15 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.1.4",
+    "@testing-library/react": "^15.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "tailwindcss": "^4",
+    "tsx": "^4.19.3",
     "typescript": "^5"
   }
 }
