@@ -1,5 +1,13 @@
 // Decentro-style payment gateway simulation
-import { v4 as uuidv4 } from 'uuid'
+
+// Simple UUID generator for demo purposes
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
 
 export interface PaymentRequest {
   amount: number
@@ -45,10 +53,10 @@ export class PaymentGateway {
   // Simulate payment processing
   static async processPayment(request: PaymentRequest): Promise<PaymentResponse> {
     // Simulate network delay
-    await this.simulateDelay(1000, 3000)
+    await PaymentGateway.simulateDelay(1000, 3000)
     
     const transactionId = `TXN${Date.now()}${Math.random().toString(36).substr(2, 9)}`.toUpperCase()
-    const gatewayTransactionId = `DCTR${uuidv4().replace(/-/g, '').substr(0, 16)}`.toUpperCase()
+    const gatewayTransactionId = `DCTR${generateUUID().replace(/-/g, '').substr(0, 16)}`.toUpperCase()
     
     // Calculate fees
     const fees = this.calculateProcessingFee(request.amount)
@@ -113,13 +121,13 @@ export class PaymentGateway {
   
   // Check payment status
   static async checkPaymentStatus(transactionId: string): Promise<PaymentResponse> {
-    await this.simulateDelay(500, 1000)
+    await PaymentGateway.simulateDelay(500, 1000)
     
     // Simulate status check
     return {
       success: true,
       transactionId,
-      gatewayTransactionId: `DCTR${uuidv4().replace(/-/g, '').substr(0, 16)}`.toUpperCase(),
+      gatewayTransactionId: `DCTR${generateUUID().replace(/-/g, '').substr(0, 16)}`.toUpperCase(),
       status: 'completed',
       amount: 0, // Would be fetched from database in real implementation
       fees: 0,
@@ -140,7 +148,7 @@ export class PaymentGateway {
     status: string
     message: string
   }> {
-    await this.simulateDelay(1000, 2000)
+    await PaymentGateway.simulateDelay(1000, 2000)
     
     const refundId = `RFD${Date.now()}${Math.random().toString(36).substr(2, 9)}`.toUpperCase()
     
@@ -183,7 +191,7 @@ export class PaymentGateway {
   }
   
   // Simulate network delay
-  private static simulateDelay(min: number, max: number): Promise<void> {
+  public static simulateDelay(min: number, max: number): Promise<void> {
     const delay = Math.floor(Math.random() * (max - min + 1)) + min
     return new Promise(resolve => setTimeout(resolve, delay))
   }

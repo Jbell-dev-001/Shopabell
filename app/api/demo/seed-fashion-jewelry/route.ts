@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { hash } from 'bcryptjs'
 
 export async function POST() {
   try {
@@ -20,7 +19,7 @@ export async function POST() {
     }
 
     // Hash password for all demo accounts
-    const hashedPassword = await hash('Demo123!', 10)
+    const hashedPassword = 'demo_password_hash'
     
     // Create demo users
     const demoUsers = [

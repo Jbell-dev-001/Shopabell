@@ -121,7 +121,8 @@ export class PerformanceOptimizer {
 
   private monitorTTFB(): void {
     if (typeof window !== 'undefined' && 'performance' in window) {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+      const entries = (performance as any).getEntriesByType('navigation')
+      const navigation = entries[0] as any
       if (navigation) {
         this.addMetric({
           metric: 'TTFB',

@@ -428,11 +428,11 @@ export default function WhatsAppOnboardingPage() {
                   Your store is now ready. You can start adding products and selling on WhatsApp.
                 </p>
                 <div className="flex gap-4 justify-center">
-                  <Button asChild>
-                    <a href="/dashboard">Go to Dashboard</a>
+                  <Button onClick={() => window.location.href = '/dashboard'}>
+                    Go to Dashboard
                   </Button>
-                  <Button variant="outline" asChild>
-                    <a href="/dashboard/products">Add Products</a>
+                  <Button variant="outline" onClick={() => window.location.href = '/dashboard/products'}>
+                    Add Products
                   </Button>
                 </div>
               </div>

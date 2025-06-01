@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
-    const orderId = params.id
+    const { id: orderId } = await params
 
     const { data: order, error } = await supabase
       .from('orders')
@@ -50,11 +50,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
-    const orderId = params.id
+    const { id: orderId } = await params
     const updates = await request.json()
 
     // Remove fields that shouldn't be updated directly
@@ -93,11 +93,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
-    const orderId = params.id
+    const { id: orderId } = await params
 
     // Only allow cancellation of pending orders
     const { data: order } = await supabase

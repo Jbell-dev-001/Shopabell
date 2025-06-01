@@ -1,6 +1,6 @@
 // WhatsApp-based seller onboarding service
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { getWhatsAppClient } from './whatsapp-client'
 
 export interface OnboardingSession {
@@ -24,7 +24,9 @@ export interface BusinessDetails {
 }
 
 export class WhatsAppOnboardingService {
-  private supabase = createServerClient()
+  private async getSupabase() {
+    return await createClient()
+  }
   private whatsapp = getWhatsAppClient()
 
   // Start onboarding process
@@ -37,8 +39,10 @@ export class WhatsAppOnboardingService {
         return { success: false, error: 'Invalid phone number format' }
       }
 
+      const supabase = await this.getSupabase()
+      
       // Check if user already exists
-      const { data: existingUser } = await this.supabase
+      const { data: existingUser } = await supabase
         .from('sellers')
         .select('id, onboarding_completed')
         .eq('phone', cleanPhone)
@@ -59,7 +63,7 @@ export class WhatsAppOnboardingService {
         expires_at: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
       }
 
-      const { data: session, error } = await this.supabase
+      const { data: session, error } = await supabase
         .from('onboarding_sessions')
         .upsert(sessionData, { 
           onConflict: 'phone_number',
@@ -96,7 +100,8 @@ export class WhatsAppOnboardingService {
   // Verify phone number with code
   async verifyPhone(sessionId: string, code: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const { data: session, error } = await this.supabase
+      const supabase = await this.getSupabase()
+      const { data: session, error } = await supabase
         .from('onboarding_sessions')
         .select('*')
         .eq('id', sessionId)
@@ -117,7 +122,7 @@ export class WhatsAppOnboardingService {
       }
 
       // Update session to next step
-      const { error: updateError } = await this.supabase
+      const { error: updateError } = await supabase
         .from('onboarding_sessions')
         .update({ 
           step: 'business_details',
@@ -144,7 +149,8 @@ export class WhatsAppOnboardingService {
   // Save business details
   async saveBusinessDetails(sessionId: string, details: BusinessDetails): Promise<{ success: boolean; error?: string }> {
     try {
-      const { data: session, error } = await this.supabase
+      const supabase = await this.getSupabase()
+      const { data: session, error } = await supabase
         .from('onboarding_sessions')
         .select('*')
         .eq('id', sessionId)
@@ -170,7 +176,7 @@ export class WhatsAppOnboardingService {
       // Update session with business details
       const updatedData = { ...session.data, businessDetails: details }
       
-      const { error: updateError } = await this.supabase
+      const { error: updateError } = await supabase
         .from('onboarding_sessions')
         .update({ 
           step: 'store_setup',
@@ -195,7 +201,8 @@ export class WhatsAppOnboardingService {
   // Complete seller registration
   async completeOnboarding(sessionId: string, storeDetails: any): Promise<{ success: boolean; sellerId?: string; error?: string }> {
     try {
-      const { data: session, error } = await this.supabase
+      const supabase = await this.getSupabase()
+      const { data: session, error } = await supabase
         .from('onboarding_sessions')
         .select('*')
         .eq('id', sessionId)
@@ -229,7 +236,7 @@ export class WhatsAppOnboardingService {
         created_at: new Date().toISOString()
       }
 
-      const { data: seller, error: sellerError } = await this.supabase
+      const { data: seller, error: sellerError } = await supabase
         .from('sellers')
         .upsert(sellerData, { onConflict: 'phone', ignoreDuplicates: false })
         .select()
@@ -240,7 +247,7 @@ export class WhatsAppOnboardingService {
       }
 
       // Create default store
-      const { error: storeError } = await this.supabase
+      const { error: storeError } = await supabase
         .from('stores')
         .upsert({
           seller_id: seller.id,
@@ -260,7 +267,7 @@ export class WhatsAppOnboardingService {
       await this.whatsapp.sendWelcomeMessage(`+91${session.phone_number}`, businessDetails.ownerName)
 
       // Clean up session
-      await this.supabase
+      await supabase
         .from('onboarding_sessions')
         .delete()
         .eq('id', sessionId)
@@ -277,10 +284,11 @@ export class WhatsAppOnboardingService {
   // Process WhatsApp webhook messages
   async processWebhookMessage(phoneNumber: string, message: string): Promise<void> {
     try {
+      const supabase = await this.getSupabase()
       const cleanPhone = phoneNumber.replace(/^\+91/, '').replace(/\D/g, '')
       
       // Get active onboarding session
-      const { data: session } = await this.supabase
+      const { data: session } = await supabase
         .from('onboarding_sessions')
         .select('*')
         .eq('phone_number', cleanPhone)
@@ -291,7 +299,7 @@ export class WhatsAppOnboardingService {
         await this.handleOnboardingMessage(session, message)
       } else {
         // Check if it's an existing seller
-        const { data: seller } = await this.supabase
+        const { data: seller } = await supabase
           .from('sellers')
           .select('id, business_name')
           .eq('phone', cleanPhone)
@@ -370,7 +378,8 @@ export class WhatsAppOnboardingService {
   // Get onboarding session
   async getSession(sessionId: string): Promise<OnboardingSession | null> {
     try {
-      const { data: session, error } = await this.supabase
+      const supabase = await this.getSupabase()
+      const { data: session, error } = await supabase
         .from('onboarding_sessions')
         .select('*')
         .eq('id', sessionId)
@@ -397,7 +406,8 @@ export class WhatsAppOnboardingService {
   // Clean up expired sessions
   async cleanupExpiredSessions(): Promise<void> {
     try {
-      await this.supabase
+      const supabase = await this.getSupabase()
+      await supabase
         .from('onboarding_sessions')
         .delete()
         .lt('expires_at', new Date().toISOString())
