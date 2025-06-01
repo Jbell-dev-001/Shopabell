@@ -48,6 +48,17 @@ export default function DemoSetupPage() {
     setFashionMessage('Creating fashion & jewelry demo data...')
     
     try {
+      // First try to clear existing data
+      setFashionMessage('Clearing existing demo data...')
+      await fetch('/api/demo/seed-fashion-jewelry', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      // Now create fresh data
+      setFashionMessage('Creating fashion & jewelry demo data...')
       const response = await fetch('/api/demo/seed-fashion-jewelry', {
         method: 'POST',
         headers: {
@@ -61,15 +72,18 @@ export default function DemoSetupPage() {
         setFashionStatus('success')
         setFashionMessage(result.message)
         setFashionDetails(result.credentials)
+        toast.success('Fashion & jewelry demo data created successfully!')
       } else {
         setFashionStatus('error')
         setFashionMessage(result.error || 'Failed to seed fashion & jewelry data')
         setFashionDetails(result.details)
+        toast.error(result.error || 'Failed to seed fashion & jewelry data')
       }
     } catch (error) {
       setFashionStatus('error')
       setFashionMessage('Network error occurred')
       setFashionDetails(error)
+      toast.error('Network error occurred')
     }
   }
 
@@ -232,12 +246,17 @@ export default function DemoSetupPage() {
 
             <Button
               onClick={async () => {
-                const response = await fetch('/api/demo/create-sample-chats', { method: 'POST' })
-                const result = await response.json()
-                if (response.ok) {
-                  toast.success('Sample chats created successfully!')
-                } else {
-                  toast.error(result.error || 'Failed to create sample chats')
+                try {
+                  toast.info('Creating sample chats and orders...')
+                  const response = await fetch('/api/demo/create-sample-chats', { method: 'POST' })
+                  const result = await response.json()
+                  if (response.ok) {
+                    toast.success(`Sample chats created successfully! ${result.data?.chatsCreated || 0} chats, ${result.data?.messagesCreated || 0} messages`)
+                  } else {
+                    toast.error(result.error || 'Failed to create sample chats')
+                  }
+                } catch (error) {
+                  toast.error('Network error while creating sample chats')
                 }
               }}
               className="w-full"
