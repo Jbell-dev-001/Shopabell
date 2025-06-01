@@ -27,7 +27,10 @@ export class WhatsAppOnboardingService {
   private async getSupabase() {
     return await createClient()
   }
-  private whatsapp = getWhatsAppClient()
+  
+  private getWhatsApp() {
+    return getWhatsAppClient()
+  }
 
   // Start onboarding process
   async startOnboarding(phoneNumber: string): Promise<{ success: boolean; sessionId?: string; error?: string }> {
@@ -77,7 +80,7 @@ export class WhatsAppOnboardingService {
       }
 
       // Send verification code via WhatsApp
-      const messageSent = await this.whatsapp.sendVerificationCode(`+91${cleanPhone}`, verificationCode)
+      const messageSent = await this.getWhatsApp().sendVerificationCode(`+91${cleanPhone}`, verificationCode)
       
       if (!messageSent) {
         // Fallback: save session anyway for manual verification
@@ -135,7 +138,7 @@ export class WhatsAppOnboardingService {
       }
 
       // Send business details instructions
-      await this.whatsapp.sendOnboardingInstructions(`+91${session.phone_number}`)
+      await this.getWhatsApp().sendOnboardingInstructions(`+91${session.phone_number}`)
 
       return { success: true }
     } catch (error) {
@@ -264,7 +267,7 @@ export class WhatsAppOnboardingService {
       }
 
       // Send welcome message
-      await this.whatsapp.sendWelcomeMessage(`+91${session.phone_number}`, businessDetails.ownerName)
+      await this.getWhatsApp().sendWelcomeMessage(`+91${session.phone_number}`, businessDetails.ownerName)
 
       // Clean up session
       await supabase
@@ -329,14 +332,14 @@ export class WhatsAppOnboardingService {
         if (/^\d{6}$/.test(message.trim())) {
           const result = await this.verifyPhone(session.id, message.trim())
           if (result.success) {
-            await this.whatsapp.sendMessage({
+            await this.getWhatsApp().sendMessage({
               from: process.env.WHATSAPP_PHONE_NUMBER_ID!,
               to: phoneNumber,
               type: 'text',
               text: { body: '✅ Phone verified! Please complete your business details in the app.' }
             })
           } else {
-            await this.whatsapp.sendMessage({
+            await this.getWhatsApp().sendMessage({
               from: process.env.WHATSAPP_PHONE_NUMBER_ID!,
               to: phoneNumber,
               type: 'text',
@@ -349,7 +352,7 @@ export class WhatsAppOnboardingService {
       case 'business_details':
       case 'store_setup':
         // Guide them to complete in the app
-        await this.whatsapp.sendMessage({
+        await this.getWhatsApp().sendMessage({
           from: process.env.WHATSAPP_PHONE_NUMBER_ID!,
           to: phoneNumber,
           type: 'text',
