@@ -4,6 +4,8 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Product } from '@/types/supabase'
+import { productService } from '@/lib/products/product-service'
+import { authService } from '@/lib/auth/auth-service'
 
 interface CapturedFrame {
   id: string
@@ -151,12 +153,16 @@ export function LivestreamCapture({ onProductsCreated, onCancel }: LivestreamCap
     setIsProcessing(true)
     
     try {
-      // Convert captured frames to products
-      const products: Product[] = capturedFrames
+      // Get current user
+      const user = await authService.getCurrentUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      // Convert captured frames to product data
+      const productData = capturedFrames
         .filter(frame => frame.aiData)
         .map(frame => ({
-          id: frame.id,
-          user_id: '', // Will be set by API
           name: frame.aiData!.name,
           description: frame.aiData!.description,
           price: frame.aiData!.suggestedPrice,
@@ -164,18 +170,20 @@ export function LivestreamCapture({ onProductsCreated, onCancel }: LivestreamCap
           category: frame.aiData!.category,
           stock_quantity: 1,
           source: 'livestream' as const,
-          is_active: true,
-          ai_extracted_data: frame.aiData,
-          created_at: frame.timestamp.toISOString(),
-          updated_at: frame.timestamp.toISOString()
+          ai_extracted_data: frame.aiData
         }))
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Create products using the service
+      const result = await productService.createProducts(user.id, productData)
       
-      onProductsCreated(products)
+      if (result.success) {
+        onProductsCreated(result.products)
+      } else {
+        throw new Error(result.error || 'Failed to create products')
+      }
     } catch (error) {
-      setError('Failed to create products. Please try again.')
+      const message = error instanceof Error ? error.message : 'Failed to create products. Please try again.'
+      setError(message)
     } finally {
       setIsProcessing(false)
     }

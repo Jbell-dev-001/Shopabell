@@ -4,6 +4,8 @@ import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Product } from '@/types/supabase'
+import { productService } from '@/lib/products/product-service'
+import { authService } from '@/lib/auth/auth-service'
 
 interface ExtractedProduct {
   id: string
@@ -158,9 +160,14 @@ export function VideoUploadWidget({ onProductsCreated, onCancel }: VideoUploadWi
     setIsProcessing(true)
     
     try {
-      const products: Product[] = extractedProducts.map(product => ({
-        id: product.id,
-        user_id: '', // Will be set by API
+      // Get current user
+      const user = await authService.getCurrentUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      // Convert extracted products to product data
+      const productData = extractedProducts.map(product => ({
         name: product.name,
         description: product.description,
         price: product.suggestedPrice,
@@ -168,22 +175,24 @@ export function VideoUploadWidget({ onProductsCreated, onCancel }: VideoUploadWi
         category: product.category,
         stock_quantity: 1,
         source: 'video' as const,
-        is_active: true,
         ai_extracted_data: {
           confidence: product.confidence,
           timestamp: product.timestamp,
           extraction_method: 'video_analysis'
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        }
       }))
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Create products using the service
+      const result = await productService.createProducts(user.id, productData)
       
-      onProductsCreated(products)
+      if (result.success) {
+        onProductsCreated(result.products)
+      } else {
+        throw new Error(result.error || 'Failed to create products')
+      }
     } catch (error) {
       console.error('Error creating products:', error)
+      alert(error instanceof Error ? error.message : 'Failed to create products')
     } finally {
       setIsProcessing(false)
     }

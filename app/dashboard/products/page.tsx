@@ -9,6 +9,7 @@ import { ProductGrid } from '@/components/products/product-grid'
 import { LivestreamCapture } from '@/components/livestream/capture-widget'
 import { VideoUploadWidget } from '@/components/products/video-upload-widget'
 import { authService, AuthUser } from '@/lib/auth/auth-service'
+import { productService } from '@/lib/products/product-service'
 import { Product } from '@/types/supabase'
 
 type UploadMethod = 'manual' | 'livestream' | 'video' | null
@@ -22,8 +23,13 @@ export default function ProductsPage() {
 
   useEffect(() => {
     checkAuth()
-    // loadProducts() // Will implement when we have API
   }, [])
+
+  useEffect(() => {
+    if (user) {
+      loadProducts()
+    }
+  }, [user])
 
   const checkAuth = async () => {
     try {
@@ -37,6 +43,44 @@ export default function ProductsPage() {
       router.push('/login')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const loadProducts = async () => {
+    if (!user) return
+    
+    try {
+      const result = await productService.getProducts({ userId: user.id })
+      if (result.success) {
+        setProducts(result.products)
+      }
+    } catch (error) {
+      console.error('Failed to load products:', error)
+    }
+  }
+
+  const handleProductsCreated = async (newProducts?: Product[]) => {
+    // Refresh the products list
+    await loadProducts()
+    setUploadMethod(null)
+  }
+
+  const handleProductEdit = async (product: Product) => {
+    // For now, just log the edit action
+    // In a full implementation, you'd open an edit modal
+    console.log('Edit product:', product)
+  }
+
+  const handleProductDelete = async (productId: string) => {
+    if (!user) return
+    
+    if (confirm('Are you sure you want to delete this product?')) {
+      const result = await productService.deleteProduct(user.id, productId)
+      if (result.success) {
+        await loadProducts() // Refresh the list
+      } else {
+        alert(result.error || 'Failed to delete product')
+      }
     }
   }
 
@@ -229,7 +273,11 @@ export default function ProductsPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <ProductGrid products={products} />
+                <ProductGrid 
+                  products={products} 
+                  onEdit={handleProductEdit}
+                  onDelete={handleProductDelete}
+                />
               )}
             </div>
           </div>
@@ -238,30 +286,21 @@ export default function ProductsPage() {
           <div className="max-w-4xl mx-auto">
             {uploadMethod === 'manual' && (
               <ProductForm 
-                onSuccess={() => {
-                  setUploadMethod(null)
-                  // Refresh products list
-                }}
+                onSuccess={handleProductsCreated}
                 onCancel={() => setUploadMethod(null)}
               />
             )}
             
             {uploadMethod === 'livestream' && (
               <LivestreamCapture 
-                onProductsCreated={(newProducts) => {
-                  setProducts(prev => [...prev, ...newProducts])
-                  setUploadMethod(null)
-                }}
+                onProductsCreated={handleProductsCreated}
                 onCancel={() => setUploadMethod(null)}
               />
             )}
             
             {uploadMethod === 'video' && (
               <VideoUploadWidget 
-                onProductsCreated={(newProducts) => {
-                  setProducts(prev => [...prev, ...newProducts])
-                  setUploadMethod(null)
-                }}
+                onProductsCreated={handleProductsCreated}
                 onCancel={() => setUploadMethod(null)}
               />
             )}

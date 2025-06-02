@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { businessTypes } from '@/lib/auth/utils'
 import { cn } from '@/lib/utils/cn'
+import { productService } from '@/lib/products/product-service'
+import { authService } from '@/lib/auth/auth-service'
 
 interface ProductFormData {
   name: string
@@ -54,16 +56,41 @@ export function ProductForm({ onSuccess, onCancel }: ProductFormProps) {
     setIsLoading(true)
     
     try {
-      // TODO: Implement actual product creation API call
-      console.log('Creating product:', data)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // For now, just show success and call onSuccess
-      onSuccess()
+      // Get current user
+      const user = await authService.getCurrentUser()
+      if (!user) {
+        throw new Error('User not authenticated')
+      }
+
+      // Upload image if provided
+      let imageUrl = previewImage
+      if (data.image?.[0]) {
+        const uploadResult = await productService.uploadImage(data.image[0])
+        if (uploadResult.success && uploadResult.url) {
+          imageUrl = uploadResult.url
+        }
+      }
+
+      // Create product
+      const result = await productService.createProduct(user.id, {
+        name: data.name,
+        description: data.description,
+        price: parseFloat(data.price),
+        category: data.category,
+        stock_quantity: parseInt(data.stock),
+        image_url: imageUrl,
+        source: 'manual'
+      })
+
+      if (result.success) {
+        onSuccess()
+      } else {
+        throw new Error(result.error || 'Failed to create product')
+      }
     } catch (error) {
       console.error('Error creating product:', error)
+      // You could add toast notification here
+      alert(error instanceof Error ? error.message : 'Failed to create product')
     } finally {
       setIsLoading(false)
     }
