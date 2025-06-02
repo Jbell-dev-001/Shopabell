@@ -96,8 +96,11 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full bg-whatsapp hover:bg-whatsapp-dark">
-                Start Live Capture
+              <Button 
+                className="w-full bg-whatsapp hover:bg-whatsapp-dark"
+                asChild
+              >
+                <Link href="/dashboard/products">Start Live Capture</Link>
               </Button>
             </CardContent>
           </Card>
@@ -113,8 +116,8 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
-                Upload Video
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/dashboard/products">Upload Video</Link>
               </Button>
             </CardContent>
           </Card>
